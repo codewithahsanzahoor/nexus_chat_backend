@@ -1,0 +1,378 @@
+### ========================================
+### Nexus Chat API Test Suite
+### Base URL: http://localhost:5000/api
+### ========================================
+
+@baseUrl = http://localhost:5000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhZjlmY2ZmM2I0YmY0NWI4MGE4OGNmMSIsImlhdCI6MTc5NDc2ODEzNywiZXhwIjoxNzk3MzYwMTM3fQ.XryAKJvHKwwMDTGVSlSjBZ1Wyzov10rTiJgcgTaRxlM
+### ========================================
+### AUTHENTICATION TESTS
+### ========================================
+
+### 1. Register New User (Success)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User One",
+  "email": "testuser1@test.com",
+  "password": "password123"
+}
+
+### 2. Register Another User (Success)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User Two",
+  "email": "testuser2@test.com",
+  "password": "password123"
+}
+
+### 3. Register Third User (Success)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User Three",
+  "email": "testuser3@test.com",
+  "password": "password123"
+}
+
+### 4. Register Duplicate User (Should Fail - Edge Case)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User One",
+  "email": "testuser1@test.com",
+  "password": "password123"
+}
+
+### 5. Register with Missing Fields (Should Fail - Edge Case)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Incomplete User",
+  "email": "incomplete@test.com"
+}
+
+### 6. Register with Invalid Email (Edge Case)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Invalid Email User",
+  "email": "invalid-email",
+  "password": "password123"
+}
+
+### 7. Login Success
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser1@test.com",
+  "password": "password123"
+}
+
+### 8. Login with Wrong Password (Should Fail - Edge Case)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser1@test.com",
+  "password": "wrongpassword"
+}
+
+### 9. Login with Non-existent User (Should Fail - Edge Case)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@test.com",
+  "password": "password123"
+}
+
+### 10. Login with Missing Fields (Should Fail - Edge Case)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser1@test.com"
+}
+
+### ========================================
+### USER MANAGEMENT TESTS
+### ========================================
+
+### 11. Get All Users (Authenticated - Success)
+GET {{baseUrl}}/auth/users
+Authorization: Bearer {{token}}
+
+### 12. Get All Users without Token (Should Fail - Edge Case)
+GET {{baseUrl}}/auth/users
+
+### 13. Get All Users with Invalid Token (Should Fail - Edge Case)
+GET {{baseUrl}}/auth/users
+Authorization: Bearer invalid-token-12345
+
+### 14. Update Profile (Success)
+PUT {{baseUrl}}/auth/update-profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated User One",
+  "avatar": "https://picsum.photos/seed/updated/200"
+}
+
+### 15. Update Profile without Token (Should Fail - Edge Case)
+PUT {{baseUrl}}/auth/update-profile
+Content-Type: application/json
+
+{
+  "name": "Hacker Update"
+}
+
+### 16. Update Profile with Empty Data (Edge Case)
+PUT {{baseUrl}}/auth/update-profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "",
+  "avatar": ""
+}
+
+### ========================================
+### CONVERSATION TESTS
+### ========================================
+
+### 17. Create Direct Conversation (Success)
+POST {{baseUrl}}/chat/conversations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "direct",
+  "participants": ["6af89b0e344b52779f83c66a"]
+}
+
+### 18. Create Group Conversation (Success)
+POST {{baseUrl}}/chat/conversations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "group",
+  "groupName": "Test Group Chat",
+  "participants": ["PASTE_USER2_ID_HERE", "PASTE_USER3_ID_HERE"]
+}
+
+### 19. Create Conversation without Token (Should Fail - Edge Case)
+POST {{baseUrl}}/chat/conversations
+Content-Type: application/json
+
+{
+  "type": "direct",
+  "participants": ["some-id"]
+}
+
+### 20. Create Conversation with Empty Participants (Edge Case)
+POST {{baseUrl}}/chat/conversations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "direct",
+  "participants": []
+}
+
+### 21. Create Conversation with Invalid Type (Edge Case)
+POST {{baseUrl}}/chat/conversations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "invalid-type",
+  "participants": ["some-id"]
+}
+
+### 22. Get All Conversations (Success)
+GET {{baseUrl}}/chat/conversations
+Authorization: Bearer {{token}}
+
+### 23. Get Conversations without Token (Should Fail - Edge Case)
+GET {{baseUrl}}/chat/conversations
+
+### ========================================
+### MESSAGE TESTS
+### ========================================
+
+### 24. Send Message (Success)
+POST {{baseUrl}}/chat/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "conversationId": "6af9fd8e3b4bf45b80a88cfa",
+  "text": "Hello from Test User One!"
+}
+
+### 25. Send Message with Empty Text (Edge Case)
+POST {{baseUrl}}/chat/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "conversationId": "PASTE_CONVERSATION_ID_HERE",
+  "text": ""
+}
+
+### 26. Send Message without Token (Should Fail - Edge Case)
+POST {{baseUrl}}/chat/messages
+Content-Type: application/json
+
+{
+  "conversationId": "some-id",
+  "text": "Unauthorized message"
+}
+
+### 27. Send Message with Invalid Conversation ID (Edge Case)
+POST {{baseUrl}}/chat/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "conversationId": "invalid-conversation-id",
+  "text": "Message to nowhere"
+}
+
+### 28. Send Message without Conversation ID (Edge Case)
+POST {{baseUrl}}/chat/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "Message without conversation"
+}
+
+### 29. Get Messages for Conversation (Success)
+GET {{baseUrl}}/chat/messages/PASTE_CONVERSATION_ID_HERE
+Authorization: Bearer {{token}}
+
+### 30. Get Messages without Token (Should Fail - Edge Case)
+GET {{baseUrl}}/chat/messages/some-id
+
+### 31. Get Messages with Invalid ID (Edge Case)
+GET {{baseUrl}}/chat/messages/invalid-id
+Authorization: Bearer {{token}}
+
+### ========================================
+### HEALTH CHECK
+### ========================================
+
+### 32. Health Check
+GET http://localhost:5000/api/health
+
+### ========================================
+### FLOW TEST - Complete User Journey
+### ========================================
+
+### Step 1: Register User A
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Alice Johnson",
+  "email": "alice@test.com",
+  "password": "alice123"
+}
+
+### Step 2: Register User B
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Bob Smith",
+  "email": "bob@test.com",
+  "password": "bob123"
+}
+
+### Step 3: Login as Alice
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@test.com",
+  "password": "alice123"
+}
+
+### Step 4: Get Users (Alice)
+GET {{baseUrl}}/auth/users
+Authorization: Bearer {{token}}
+
+### Step 5: Create Conversation between Alice and Bob
+POST {{baseUrl}}/chat/conversations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "direct",
+  "participants": ["PASTE_BOB_ID_HERE"]
+}
+
+### Step 6: Send Message from Alice
+POST {{baseUrl}}/chat/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "conversationId": "PASTE_CONVERSATION_ID_HERE",
+  "text": "Hi Bob! This is Alice."
+}
+
+### Step 7: Get Messages
+GET {{baseUrl}}/chat/messages/PASTE_CONVERSATION_ID_HERE
+Authorization: Bearer {{token}}
+
+### Step 8: Update Alice's Profile
+PUT {{baseUrl}}/auth/update-profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Alice Johnson (Updated)",
+  "avatar": "https://picsum.photos/seed/alice/200"
+}
+
+### ========================================
+### INSTRUCTIONS
+### ========================================
+### 
+### HOW TO USE:
+### 
+### 1. Start the backend server:
+###    cd nexus_chat_backend
+###    npm run dev
+###
+### 2. Copy the token from the login response (Step 3 or 7)
+###    and replace {{token}} at the top of this file
+###
+### 3. For user IDs and conversation IDs:
+###    - Run "Get All Users" to get user IDs
+###    - Run "Get All Conversations" to get conversation IDs
+###    - Replace PASTE_USER_ID_HERE and PASTE_CONVERSATION_ID_HERE
+###
+### 4. In Rapid Client or VS Code REST Client:
+###    - Click "Send Request" above each request
+###    - Results will appear in the response panel
+###
+### 5. Test edge cases by running requests marked with
+###    "(Should Fail - Edge Case)" - they should return 400/401/500
+###
+### 6. Test success cases - they should return 200/201
+###
+### ========================================

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import { AuthRequest } from '../middleware/authMiddleware.js';
 
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', {
@@ -26,6 +27,8 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         name: user.name,
         email: user.email,
         avatar: user.avatar,
+        status: user.status,
+        lastSeen: user.lastSeen,
         token: generateToken(user.id),
       });
     } else {
@@ -48,6 +51,8 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
+        status: user.status,
+        lastSeen: user.lastSeen,
         token: generateToken(user.id),
       });
     } else {
@@ -58,18 +63,21 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const getUsers = async (req: Request, res: Response): Promise<void> => {
+export const getUsers = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const users = await User.find({}).select('-password');
+    const users = await User.find({
+      status: 'online',
+      _id: { $ne: req.user.id }
+    }).select('-password');
     res.json(users);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const updateProfile = async (req: any, res: Response): Promise<void> => {
+export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.id);
     if (user) {
       user.name = req.body.name || user.name;
       user.avatar = req.body.avatar || user.avatar;
@@ -79,6 +87,8 @@ export const updateProfile = async (req: any, res: Response): Promise<void> => {
         name: updatedUser.name,
         email: updatedUser.email,
         avatar: updatedUser.avatar,
+        status: updatedUser.status,
+        lastSeen: updatedUser.lastSeen,
         token: generateToken(updatedUser._id.toString()),
       });
     } else {
